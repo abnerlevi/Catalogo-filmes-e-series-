@@ -1,0 +1,1 @@
+"""Classe Episodio — esqueleto da Semana 1."""

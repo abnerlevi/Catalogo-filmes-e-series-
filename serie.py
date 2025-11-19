@@ -1,0 +1,1 @@
+"""Classe Serie — esqueleto da Semana 1."""
