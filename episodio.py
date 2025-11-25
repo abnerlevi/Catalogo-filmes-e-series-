@@ -1,6 +1,4 @@
-# episodio.py
 from midia import StatusVisualizacao
-
 
 class Episodio:
 
