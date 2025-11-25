@@ -1,0 +1,1 @@
+"""Classe Midia — esqueleto da Semana 1."""

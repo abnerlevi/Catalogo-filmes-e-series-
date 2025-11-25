@@ -1,0 +1,1 @@
+"""Classe Temporada — esqueleto da Semana 1."""

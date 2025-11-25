@@ -1,0 +1,1 @@
+"""Classe ListaPersonalizada — esqueleto da Semana 1."""

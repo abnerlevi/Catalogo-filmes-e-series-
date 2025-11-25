@@ -1,0 +1,1 @@
+"""Classe Usuario — esqueleto da Semana 1."""

@@ -33,7 +33,7 @@ catalogo/
   dados.py  
    
 
-#  UML TEXTUAL — Semana 1 (Modelo de Classes Inicial)
+## *UML TEXTUAL — Semana 1 (Modelo de Classes Inicial)*
 
 ## 1. Classe Midia (classe base)
 
@@ -166,14 +166,14 @@ remover_midia(midia)
 ## 8. Relacionamentos 
 
 *Midia*
-⮡ Classe base de Filme e Serie (Herança)
+->Classe base de Filme e Serie (Herança)
 
 *Serie*
-⮡ possui várias → Temporada (Composição)
+->possui várias → Temporada (Composição)
 
 *Temporada*
-⮡ possui vários → Episodio (Composição)
+->possui vários → Episodio (Composição)
 
 *Usuario*
-⮡ possui várias → ListaPersonalizada (Agregação)
-⮡ possui um → Historico contendo → Midia (Associação)
+->possui várias → ListaPersonalizada (Agregação)
+->possui um → Historico contendo → Midia (Associação)
