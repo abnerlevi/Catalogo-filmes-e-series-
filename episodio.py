@@ -1,20 +1,12 @@
-# episodio.py
-from midia import StatusVisualizacao
-
-
 class Episodio:
 
-    def __init__(self, numero: int, titulo: str, duracao: int, data_lancamento: str, status: StatusVisualizacao):
+    def __init__(self, numero: int, nome: str, duracao_minutos: int):
         self._numero = None
-        self._duracao = None
-        self._nota = 0.0
+        self._duracao_minutos = None
 
         self.numero = numero
-        self.duracao = duracao
-
-        self.titulo = titulo
-        self.data_lancamento = data_lancamento
-        self._status = status
+        self.nome = nome
+        self.duracao_minutos = duracao_minutos
 
     @property
     def numero(self):
@@ -27,14 +19,14 @@ class Episodio:
         self._numero = novo_numero
 
     @property
-    def duracao(self):
-        return self._duracao
+    def duracao_minutos(self):
+        return self._duracao_minutos
 
-    @duracao.setter
-    def duracao(self, nova_duracao: int):
+    @duracao_minutos.setter
+    def duracao_minutos(self, nova_duracao: int):
         if not isinstance(nova_duracao, int) or nova_duracao <= 0:
             raise ValueError("A duração do episódio deve ser positiva.")
-        self._duracao = nova_duracao
+        self._duracao_minutos = nova_duracao
 
     def __str__(self) -> str:
-        return f"Ep. {self.numero} - {self.titulo} ({self.duracao} min)"
+        return f"Ep. {self.numero} - {self.nome} ({self.duracao_minutos} min)"
