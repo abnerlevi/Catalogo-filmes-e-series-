@@ -1,5 +1,6 @@
 from enum import Enum
-from datetime import date
+from typing import List, Optional, Union
+import uuid
 
 
 class TipoMidia(Enum):
@@ -10,82 +11,211 @@ class TipoMidia(Enum):
 
 class StatusVisualizacao(Enum):
 
-    NAO_ASSISTIDO = "NÃO ASSISTIDO"
-    ASSISTINDO = "ASSISTINDO"
-    ASSISTIDO = "ASSISTIDO"
+    PENDENTE = "Pendente"
+    ASSISTINDO = "Assistindo"
+    CONCLUIDO = "Concluído"
+    ABANDONADO = "Abandonado"
 
 
 class Midia:
 
-    def __init__(self, titulo: str, tipo: TipoMidia, genero: str, ano: int,
-                 duracao: int, classificacao: str, elenco: list, status: StatusVisualizacao):
+    def __init__(
+        self,
+        titulo: str,
+        genero: str,
+        ano_lancamento: int,
+        elenco: List[str],
+        tipo: TipoMidia,
+        id: Optional[int] = None,
+        status_visualizacao: StatusVisualizacao = StatusVisualizacao.PENDENTE,
+        avaliacao: float = 0.0
+    ):
 
-        self._titulo = None
-        self._ano = None
-        self._duracao = None
-        self._nota_media = 0.0  # Inicializa
+        self._id: Optional[int] = id
 
-        self.titulo = titulo
-        self.ano = ano
-        self.duracao = duracao
+        self.uuid: str = str(uuid.uuid4())
 
-        self._tipo = tipo
-        self.genero = genero
-        self.classificacao = classificacao
-        self.elenco = elenco
-        self._status = status
-
-    @property
-    def titulo(self):
-        return self._titulo
-
-    @titulo.setter
-    def titulo(self, novo_titulo: str):
-        if not novo_titulo or novo_titulo.strip() == "":
-            raise ValueError("O título da mídia não pode ser vazio.")
-        self._titulo = novo_titulo.strip()
-
-    @property
-    def ano(self):
-        return self._ano
-
-    @ano.setter
-    def ano(self, novo_ano: int):
-        # Validação básica
-        if not isinstance(novo_ano, int) or novo_ano < 1900 or novo_ano > date.today().year + 5:
-            raise ValueError(f"O ano de lançamento ({novo_ano}) é inválido.")
-        self._ano = novo_ano
-
-    @property
-    def duracao(self):
-        return self._duracao
-
-    @duracao.setter
-    def duracao(self, nova_duracao: int):
-        if not isinstance(nova_duracao, int) or nova_duracao <= 0:
+        if not titulo or not genero or not ano_lancamento:
             raise ValueError(
-                "A duração deve ser um valor inteiro positivo em minutos.")
-        self._duracao = nova_duracao
+                "Título, gênero e ano de lançamento são obrigatórios.")
+
+        self.titulo: str = titulo
+        self.genero: str = genero
+        self.ano_lancamento: int = ano_lancamento
+        self.elenco: List[str] = elenco
+        self.tipo: TipoMidia = tipo
+        self._status_visualizacao: StatusVisualizacao = status_visualizacao
+        self._avaliacao: float = 0.0
+
+        self.avaliacao = avaliacao
 
     @property
-    def nota_media(self):
-        return self._nota_media
+    def id(self) -> Optional[int]:
 
-    @nota_media.setter
-    def nota_media(self, nova_nota: float):
-        if not (0 <= nova_nota <= 10):
-            raise ValueError("A nota deve ser um número entre 0 e 10.")
-        self._nota_media = nova_nota
+        return self._id
+
+    @id.setter
+    def id(self, value: int):
+
+        if self._id is None and isinstance(value, int) and value > 0:
+            self._id = value
+        elif self._id is not None and self._id != value:
+
+            self._id = value
+
+        elif self._id is None and value is None:
+
+            pass
+        else:
+
+            pass
+
+    @property
+    def status_visualizacao(self) -> StatusVisualizacao:
+
+        return self._status_visualizacao
+
+    @status_visualizacao.setter
+    def status_visualizacao(self, value: StatusVisualizacao):
+
+        if not isinstance(value, StatusVisualizacao):
+            raise TypeError(
+                "O status deve ser um membro do enum StatusVisualizacao.")
+        self._status_visualizacao = value
+
+    @property
+    def avaliacao(self) -> float:
+
+        return self._avaliacao
+
+    @avaliacao.setter
+    def avaliacao(self, value: Union[int, float]):
+
+        try:
+            val = float(value)
+        except ValueError:
+            raise ValueError("A avaliação deve ser um número.")
+
+        val = max(0.0, min(val, 10.0))
+
+        if self.status_visualizacao != StatusVisualizacao.CONCLUIDO and val > 0.0:
+            print(
+                "Aviso: Avaliação só é válida para mídias 'Concluído'. Avaliação redefinida para 0.0.")
+            self._avaliacao = 0.0
+        else:
+            self._avaliacao = val
+
+    def to_dict(self) -> dict:
+
+        data = {
+            'id': self.id,
+            'titulo': self.titulo,
+            'genero': self.genero,
+            'ano_lancamento': self.ano_lancamento,
+            'elenco': self.elenco,
+            'tipo': self.tipo.name,
+            'status_visualizacao': self.status_visualizacao.name,
+            'avaliacao': self.avaliacao
+        }
+        return data
 
     def __str__(self) -> str:
 
-        return f"{self._tipo.value}: {self._titulo} ({self._ano}) - Status: {self._status.value}"
+        elenco_str = ", ".join(
+            self.elenco[:3]) + ("..." if len(self.elenco) > 3 else "")
+        return (
+            f"  Título: {self.titulo} ({self.ano_lancamento}) | Tipo: {self.tipo.value}\n"
+            f"  Gênero: {self.genero} | Status: {self.status_visualizacao.value}\n"
+            f"  Avaliação: {self.avaliacao:.1f}/10.0 | Elenco: {elenco_str}"
+        )
 
-    def __eq__(self, outra_midia: object) -> bool:
 
-        if not isinstance(outra_midia, Midia):
-            return NotImplemented
+class Episodio:
 
-        return (self._titulo == outra_midia.titulo and
-                self._tipo == outra_midia._tipo and
-                self._ano == outra_midia.ano)
+    def __init__(self, numero: int, nome: str, duracao_minutos: int, id: Optional[int] = None):
+
+        if numero <= 0 or duracao_minutos <= 0:
+            raise ValueError(
+                "Número e duração do episódio devem ser positivos.")
+
+        self._id: Optional[int] = id
+        self.numero: int = numero
+        self.nome: str = nome
+        self.duracao_minutos: int = duracao_minutos
+
+    @property
+    def id(self) -> Optional[int]:
+
+        return self._id
+
+    @id.setter
+    def id(self, value: int):
+
+        if self._id is None and isinstance(value, int) and value > 0:
+            self._id = value
+        elif self._id is not None and self._id != value:
+            self._id = value
+
+    def to_dict(self) -> dict:
+
+        return {
+            'id': self.id,
+            'numero': self.numero,
+            'nome': self.nome,
+            'duracao_minutos': self.duracao_minutos
+        }
+
+    def __str__(self) -> str:
+        return f"E{self.numero}: {self.nome} ({self.duracao_minutos} min)"
+
+
+class Temporada:
+
+    def __init__(self, numero: int, titulo: str, episodios: Optional[List[Episodio]] = None, id: Optional[int] = None):
+
+        if numero <= 0:
+            raise ValueError("O número da temporada deve ser positivo.")
+
+        self._id: Optional[int] = id
+        self.numero: int = numero
+        self.titulo: str = titulo
+        self.episodios: List[Episodio] = episodios if episodios is not None else [
+        ]
+
+    @property
+    def id(self) -> Optional[int]:
+
+        return self._id
+
+    @id.setter
+    def id(self, value: int):
+
+        if self._id is None and isinstance(value, int) and value > 0:
+            self._id = value
+        elif self._id is not None and self._id != value:
+            self._id = value
+
+    def adicionar_episodio(self, episodio: Episodio):
+
+        if not isinstance(episodio, Episodio):
+            raise TypeError("O objeto deve ser uma instância de Episodio.")
+
+        if any(e.numero == episodio.numero for e in self.episodios):
+            raise ValueError(
+                f"O episódio número {episodio.numero} já existe na T{self.numero}.")
+
+        self.episodios.append(episodio)
+
+    def to_dict(self) -> dict:
+
+        return {
+            'id': self.id,
+            'numero': self.numero,
+            'titulo': self.titulo,
+
+            'episodios': [e.to_dict() for e in self.episodios]
+        }
+
+    def __str__(self) -> str:
+        total_eps = len(self.episodios)
+        return f"T{self.numero}: {self.titulo} ({total_eps} episódios)"

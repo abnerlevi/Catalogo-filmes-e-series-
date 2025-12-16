@@ -1,1 +1,0 @@
-"""Módulo dados — esqueleto da Semana 1."""
