@@ -62,7 +62,6 @@ O projeto foi desenvolvido como parte de uma atividade acadêmica, seguindo os r
 - Funções para salvar, carregar e atualizar dados automaticamente.
 
 ### Testes
-- Arquivo `test_catalogo.py` com testes usando pytest.
 - Cobertura de criação de mídias, cálculos de estatísticas, validações e relatórios.
 
 ## Estrutura do Projeto
@@ -134,14 +133,6 @@ python main.py
 - **Avaliar Mídia**: Opção 3, selecione ID, atualize status e avaliação.
 - **Relatório**: Opção 6, visualize estatísticas gerais e listas pendentes.
 
-## Testes
-
-Execute os testes com pytest:
-
-```bash
-pip install pytest
-pytest test_catalogo.py
-```
 
 Os testes cobrem:
 - Criação e manipulação de mídias.
@@ -161,7 +152,6 @@ Os testes cobrem:
 
 - ✅ Modelagem OO com herança, encapsulamento e métodos especiais.
 - ✅ Validações e regras de negócio implementadas.
-- ✅ Testes com pytest cobrindo cenários principais.
 - ✅ Relatórios de estatísticas e filtros.
 - ✅ Documentação completa no README.
 
@@ -174,18 +164,8 @@ O projeto foi desenvolvido em 5 semanas, conforme o cronograma:
 - **Semana 4**: Regras de negócio e CLI.
 - **Semana 5**: Refinamentos, testes e documentação final.
 
-## Contribuição
 
-Para contribuir:
-1. Faça fork do repositório.
-2. Crie uma branch para sua feature.
-3. Implemente e teste.
-4. Abra um pull request.
 
-## Licença
 
-Este projeto é acadêmico e não possui licença específica.
 
-## Autor
-
-Desenvolvido por [Seu Nome] como atividade da disciplina de Programação Orientada a Objetos.
+Desenvolvido por [ABNER LEVI DA SILVA ANDRADE] como atividade da disciplina de Programação Orientada a Objetos.
