@@ -1,18 +1,17 @@
 import sys
 from typing import List, Union
 
-# Importações de classes
+
 from midia import StatusVisualizacao, TipoMidia, Temporada, Episodio, Midia
 from midia_concreta import Filme, Serie
 from catalogo import Catalogo
 from pathlib import Path
 
-# Configuração do caminho do banco de dados (o mesmo usado em catalogo.py)
+
 DB_PATH = Path("dados.db")
 
-# Inicializa o catálogo (conecta ao DB e carrega dados)
 try:
-    # Passamos o caminho do DB para o construtor, garantindo que use o correto
+
     catalogo = Catalogo(db_path=DB_PATH)
 except Exception as e:
     print(f"Não foi possível inicializar o Catálogo: {e}")
@@ -20,18 +19,17 @@ except Exception as e:
 
 
 def limpar_tela():
-    """Função simples para limpar o console."""
-    # Simplesmente imprime algumas linhas vazias para clareza no ambiente Canvas
+
     print("\n" * 5)
 
 
 def input_limpo(prompt: str) -> str:
-    """Função de entrada que limpa e retorna o input."""
+
     return input(prompt).strip()
 
 
 def obter_dados_base():
-    """Obtém dados comuns a Filmes e Séries do usuário."""
+
     titulo = input_limpo("Título: ")
     genero = input_limpo("Gênero: ")
     while True:
@@ -52,7 +50,7 @@ def obter_dados_base():
 
 
 def menu_adicionar_midia():
-    """Menu para adicionar um novo Filme ou Série."""
+
     limpar_tela()
     print("--- ADICIONAR NOVA MÍDIA ---")
     print("1. Adicionar Filme")
@@ -72,7 +70,6 @@ def menu_adicionar_midia():
             except ValueError:
                 print("Entrada inválida. Digite um número inteiro.")
 
-        # O construtor de Filme usa 'elenco'
         filme = Filme(titulo, genero, ano, duracao, elenco)
         catalogo.adicionar_midia(filme)
         print(
@@ -80,10 +77,9 @@ def menu_adicionar_midia():
 
     elif escolha == '2':
         titulo, genero, ano, elenco = obter_dados_base()
-        # O construtor de Série usa 'elenco'
+
         serie = Serie(titulo, genero, ano, elenco)
 
-        # Adiciona pelo menos a primeira temporada
         temp1 = Temporada(1, "Primeira Temporada")
         serie.adicionar_temporada(temp1)
 
@@ -98,7 +94,7 @@ def menu_adicionar_midia():
 
 
 def exibir_midias(midias_list: List[Midia]):
-    """Exibe a lista de mídias de forma formatada."""
+
     if not midias_list:
         print("\nO catálogo está vazio ou não foram encontrados resultados.\n")
         return
@@ -108,12 +104,10 @@ def exibir_midias(midias_list: List[Midia]):
         print(f"ID: {midia.id} | {midia.tipo.value}")
         print(midia)
 
-        # Exibição de Elenco (usando 'elenco')
         print(f"Elenco: {', '.join(midia.elenco) if midia.elenco else 'N/A'}")
 
-        # Se for Série, exibe detalhes das temporadas/episódios
         if midia.tipo == TipoMidia.SERIE:
-            serie = midia  # type: Serie
+            serie = midia
             print("\nTemporadas:")
             if not serie.temporadas:
                 print("    Nenhuma temporada cadastrada.")
@@ -123,7 +117,6 @@ def exibir_midias(midias_list: List[Midia]):
                 print(
                     f"    - T{temporada.numero}: {temporada.titulo} (ID: {temporada.id}, {total_eps} episódios)")
 
-                # Exibe episódios
                 for episodio in sorted(temporada.episodios, key=lambda e: e.numero):
                     print(
                         f"        -> E{episodio.numero}: {episodio.nome} ({episodio.duracao_minutos} min)")
@@ -132,7 +125,7 @@ def exibir_midias(midias_list: List[Midia]):
 
 
 def menu_atualizar_status_avaliacao():
-    """Permite ao usuário atualizar o status e/ou avaliação de uma mídia."""
+
     limpar_tela()
     catalogo.carregar_midias()
     exibir_midias(catalogo.midias)
@@ -159,7 +152,6 @@ def menu_atualizar_status_avaliacao():
 
     print(f"\nAtualizando: {midia.titulo}")
 
-    # 1. Atualizar Status
     print("\n--- Status de Visualização ---")
     status_options = {str(i+1): status for i,
                       status in enumerate(StatusVisualizacao)}
@@ -179,7 +171,6 @@ def menu_atualizar_status_avaliacao():
         else:
             print("Opção inválida.")
 
-    # 2. Atualizar Avaliação
     if midia.status_visualizacao == StatusVisualizacao.CONCLUIDO:
         while True:
             avaliacao_str = input_limpo(
@@ -188,14 +179,13 @@ def menu_atualizar_status_avaliacao():
                 break
             try:
                 nova_avaliacao = float(avaliacao_str)
-                # A validação de range é feita no setter da classe Midia
+
                 midia.avaliacao = nova_avaliacao
                 print(f"[AVALIAÇÃO] Atualizada para: {midia.avaliacao:.1f}")
                 break
             except ValueError:
                 print("Avaliação inválida. Digite um número entre 0.0 e 10.0.")
 
-    # Persiste as mudanças no DB (usando o método de atualização)
     catalogo.atualizar_midia(midia)
     print(
         f"\n[SUCESSO] Mídia '{midia.titulo}' atualizada no banco de dados.\n")
@@ -203,7 +193,7 @@ def menu_atualizar_status_avaliacao():
 
 
 def menu_adicionar_episodio():
-    """Adiciona um novo episódio a uma série existente."""
+
     limpar_tela()
     series = [m for m in catalogo.midias if m.tipo == TipoMidia.SERIE]
 
@@ -231,7 +221,6 @@ def menu_adicionar_episodio():
         except ValueError:
             print("ID inválido. Digite um número inteiro.")
 
-    # Obter dados do episódio
     while True:
         try:
             num_temporada = int(input_limpo(
@@ -267,7 +256,7 @@ def menu_adicionar_episodio():
 
     try:
         novo_episodio = Episodio(num_episodio, nome_episodio, duracao)
-        # O método de Catalogo adiciona e persiste
+
         catalogo.adicionar_episodio_em_temporada(
             serie_id, num_temporada, novo_episodio)
         print(
@@ -279,7 +268,7 @@ def menu_adicionar_episodio():
 
 
 def menu_remover_midia():
-    """Remove uma mídia do catálogo e do DB."""
+
     limpar_tela()
     catalogo.carregar_midias()
     exibir_midias(catalogo.midias)
@@ -324,9 +313,9 @@ def menu_remover_midia():
 
 
 def menu_relatorio():
-    """Gera e exibe um relatório com estatísticas e listas de status."""
+
     limpar_tela()
-    catalogo.carregar_midias()  # Recarrega para garantir dados atualizados
+    catalogo.carregar_midias()
     stats = catalogo.obter_estatisticas_gerais()
 
     print("=" * 40)
@@ -343,7 +332,7 @@ def menu_relatorio():
 
         print("\n--- Métricas de Visualização ---")
         for status in StatusVisualizacao:
-            # Garante que a chave existe
+
             count = stats['status'].get(status.value, 0)
             print(f"  - {status.value}: {count} itens")
 
@@ -353,6 +342,9 @@ def menu_relatorio():
                 f"Avaliação Média Global: {stats['media_avaliacao']:.2f} / 10.0 (baseado em {stats['total_avaliacoes']} avaliações)")
         else:
             print("Nenhuma mídia avaliada ainda.")
+
+        print(
+            f"Total de Horas Assistidas: {stats['total_horas_assistidas']:.1f} horas (mídias concluídas)")
 
         print("\n" + "=" * 40)
         print("    LISTA DE ITENS PENDENTES")
@@ -367,12 +359,48 @@ def menu_relatorio():
         else:
             print("Nenhuma mídia no status 'Pendente'. Bom trabalho!")
 
+        print("\n" + "=" * 40)
+        print("    TOP 10 FILMES MAIS BEM AVALIADOS")
+        print("=" * 40)
+
+        if stats['top10_filmes']:
+            for i, filme in enumerate(stats['top10_filmes'], 1):
+                print(
+                    f"{i:2d}. {filme.titulo} ({filme.ano_lancamento}) - Nota: {filme.avaliacao:.1f}/10.0")
+        else:
+            print("Nenhum filme avaliado ainda.")
+
+        print("\n" + "=" * 40)
+        print("    TOP 10 SÉRIES MAIS BEM AVALIADAS")
+        print("=" * 40)
+
+        if stats['top10_series']:
+            for i, serie in enumerate(stats['top10_series'], 1):
+                print(
+                    f"{i:2d}. {serie.titulo} ({serie.ano_lancamento}) - Nota: {serie.avaliacao:.1f}/10.0")
+        else:
+            print("Nenhuma série avaliada ainda.")
+
+        print("\n" + "=" * 40)
+        print("    DISTRIBUIÇÃO POR GÊNERO")
+        print("=" * 40)
+
+        if stats['generos']:
+            for genero, counts in sorted(stats['generos'].items()):
+                filmes = counts['filmes']
+                series = counts['series']
+                total = filmes + series
+                print(
+                    f"  {genero}: {total} itens (Filmes: {filmes}, Séries: {series})")
+        else:
+            print("Nenhum gênero encontrado.")
+
     print("\n" + "=" * 40)
     input("Pressione ENTER para voltar ao menu principal.")
 
 
 def menu_principal():
-    """O loop principal do programa CLI."""
+
     while True:
         limpar_tela()
         print("=" * 40)
@@ -391,7 +419,7 @@ def menu_principal():
 
         if escolha == '1':
             limpar_tela()
-            catalogo.carregar_midias()  # Recarrega para garantir dados atualizados
+            catalogo.carregar_midias()
             exibir_midias(catalogo.midias)
             input("Pressione ENTER para voltar ao menu principal.")
         elif escolha == '2':

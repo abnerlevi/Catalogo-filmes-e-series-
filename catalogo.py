@@ -27,12 +27,12 @@ class Catalogo:
         return self._midias
 
     def fechar_conexao(self):
-        """Fecha a conexão com o banco de dados."""
+
         if getattr(self, "conn", None):
             self.conn.close()
 
     def inicializar_db(self):
-        """Cria as tabelas do banco de dados se não existirem."""
+
         if not self.conn:
             return
 
@@ -73,7 +73,7 @@ class Catalogo:
         self.conn.commit()
 
     def carregar_midias(self):
-        """Carrega todas as mídias do DB para a lista interna em memória."""
+
         if not self.conn:
             self._midias = []
             return
@@ -130,7 +130,7 @@ class Catalogo:
         self._midias.sort(key=lambda m: m.titulo)
 
     def adicionar_midia(self, midia: Midia):
-        """Adiciona uma nova mídia ao DB e à lista em memória."""
+
         if not self.conn:
             raise RuntimeError("Conexão com DB indisponível.")
 
@@ -154,7 +154,7 @@ class Catalogo:
                 self.cursor.execute("""
                     INSERT INTO Temporada (serie_id, numero, nome)
                     VALUES (?, ?, ?)
-                """, (midia._id, temporada.numero, temporada.nome))
+                """, (midia._id, temporada.numero, temporada.titulo))
                 temporada._id = self.cursor.lastrowid
 
                 for episodio in temporada.episodios:
@@ -167,7 +167,7 @@ class Catalogo:
         self._midias.append(midia)
 
     def atualizar_midia(self, midia: Midia):
-        """Atualiza o status e avaliação de uma mídia existente no DB."""
+
         if not self.conn:
             raise RuntimeError("Conexão com DB indisponível.")
 
@@ -179,14 +179,14 @@ class Catalogo:
         self.conn.commit()
 
     def buscar_serie_por_id(self, serie_id: int) -> Optional[Serie]:
-        """Busca uma instância de Série pelo seu ID interno no catálogo em memória."""
+
         for midia in self._midias:
             if midia._id == serie_id and midia.tipo == TipoMidia.SERIE:
                 return midia
         return None
 
     def adicionar_episodio_em_temporada(self, serie_id: int, num_temporada: int, episodio: Episodio):
-        """Adiciona um episódio a uma temporada existente e persiste no DB."""
+
         if not self.conn:
             raise RuntimeError("Conexão com DB indisponível.")
 
@@ -213,7 +213,7 @@ class Catalogo:
             f"Episódio {episodio.numero} adicionado à Temporada {num_temporada} de {serie.titulo}.")
 
     def remover_midia(self, midia_id: int, tipo_midia: TipoMidia):
-        """Remove uma mídia do DB e da memória. Se for Série, remove dependências."""
+
         if not self.conn:
             raise RuntimeError("Conexão com DB indisponível.")
 
@@ -235,7 +235,7 @@ class Catalogo:
         self._midias = [m for m in self._midias if m._id != midia_id]
 
     def obter_estatisticas_gerais(self) -> Dict[str, Union[int, float, Dict[str, int]]]:
-        """Calcula e retorna estatísticas resumidas do catálogo."""
+
         total = len(self._midias)
 
         stats: Dict[str, Any] = {
@@ -244,17 +244,37 @@ class Catalogo:
             'series': 0,
             'status': {s.value: 0 for s in StatusVisualizacao},
             'media_avaliacao': 0.0,
-            'total_avaliacoes': 0
+            'total_avaliacoes': 0,
+            'total_horas_assistidas': 0.0,
+            'top10_filmes': [],
+            'top10_series': [],
+            'generos': {}
         }
 
         avaliacoes = []
+        total_minutos_assistidos = 0
         for midia in self._midias:
             if midia.tipo == TipoMidia.FILME:
                 stats['filmes'] += 1
             elif midia.tipo == TipoMidia.SERIE:
                 stats['series'] += 1
 
+            # Contagem por gênero
+            genero = midia.genero
+            if genero not in stats['generos']:
+                stats['generos'][genero] = {'filmes': 0, 'series': 0}
+            if midia.tipo == TipoMidia.FILME:
+                stats['generos'][genero]['filmes'] += 1
+            else:
+                stats['generos'][genero]['series'] += 1
+
             stats['status'][midia.status_visualizacao.value] += 1
+
+            if midia.status_visualizacao == StatusVisualizacao.CONCLUIDO:
+                if midia.tipo == TipoMidia.FILME:
+                    total_minutos_assistidos += midia.duracao_minutos
+                elif midia.tipo == TipoMidia.SERIE:
+                    total_minutos_assistidos += midia.duracao_total
 
             if midia.avaliacao is not None:
                 avaliacoes.append(midia.avaliacao)
@@ -264,8 +284,21 @@ class Catalogo:
             stats['media_avaliacao'] = round(
                 sum(avaliacoes) / len(avaliacoes), 2)
 
+        stats['total_horas_assistidas'] = round(
+            total_minutos_assistidos / 60, 1)
+
+        filmes_avaliados = [m for m in self._midias if m.tipo ==
+                            TipoMidia.FILME and m.avaliacao > 0]
+        series_avaliadas = [m for m in self._midias if m.tipo ==
+                            TipoMidia.SERIE and m.avaliacao > 0]
+
+        stats['top10_filmes'] = sorted(
+            filmes_avaliados, key=lambda m: m.avaliacao, reverse=True)[:10]
+        stats['top10_series'] = sorted(
+            series_avaliadas, key=lambda m: m.avaliacao, reverse=True)[:10]
+
         return stats
 
     def obter_midias_por_status(self, status: StatusVisualizacao) -> List[Midia]:
-        """Retorna uma lista de mídias filtradas por StatusVisualizacao."""
+
         return [midia for midia in self._midias if midia.status_visualizacao == status]
