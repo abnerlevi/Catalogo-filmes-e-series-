@@ -1,4 +1,4 @@
-# Catálogo Pessoal de Mídias
+# Catálogo de Filmes e Séries
 
 ## Visão Geral
 
